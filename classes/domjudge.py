@@ -7,7 +7,7 @@ from functools import reduce
 from requests.auth import HTTPBasicAuth
 
 from utils.XML import XML_dump
-from utils.utils import dtime2timestamp, ctime2timestamp, make_ordinal, normalize_event_feed_timestamps
+from utils.utils import dtime2timestamp, ctime2timestamp, make_ordinal, normalize_event_feed_timestamps, api_cache_path
 
 class DOMjudge:
 
@@ -19,6 +19,11 @@ class DOMjudge:
 
     def API(self, method):
         req_url = self.config['url'] + method
+        cache_path = api_cache_path(self.config, method)
+        if cache_path != None and cache_path.exists():
+            print ("[CACHE] GET %s" % req_url)
+            return json.loads(cache_path.read_text(encoding="utf-8"))
+
         print ("[   ] GET %s" % req_url, end='\r')
         res = requests.get(
             req_url,
@@ -26,6 +31,9 @@ class DOMjudge:
             verify=not self.config.get('skip_verify', False)
         )
         print ("[%d] GET %s" % (res.status_code, req_url))
+        if cache_path != None:
+            cache_path.parent.mkdir(parents=True, exist_ok=True)
+            cache_path.write_text(res.text, encoding="utf-8")
         return json.loads(res.text)
 
     def load_data(self):

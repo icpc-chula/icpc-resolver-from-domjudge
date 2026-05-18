@@ -7,7 +7,7 @@ from functools import reduce
 from requests.auth import HTTPBasicAuth
 
 from utils.XML import XML_dump
-from utils.utils import dtime2timestamp, ctime2timestamp, make_ordinal_zh, randomstr, normalize_event_feed_timestamps
+from utils.utils import dtime2timestamp, ctime2timestamp, make_ordinal_zh, randomstr, normalize_event_feed_timestamps, api_cache_path
 
 class PTA_school:
 
@@ -28,6 +28,14 @@ class PTA_school:
 
     def API(self, method):
         req_url = self.config['url'] + method
+        cache_path = api_cache_path(self.config, method)
+        if cache_path != None and cache_path.exists():
+            print ("[CACHE] GET %s" % req_url)
+            res_text = cache_path.read_text(encoding="utf-8")
+            with open("eventfeed.json", "w") as f:
+                f.write(res_text)
+            return [json.loads(i) for i in res_text.split('\n') if i != ""]
+
         print ("[   ] GET %s" % req_url, end='\r')
         res = requests.get(
             req_url,
@@ -35,6 +43,9 @@ class PTA_school:
             verify=not self.config.get('skip_verify', False)
         )
         print ("[%d] GET %s" % (res.status_code, req_url))
+        if cache_path != None:
+            cache_path.parent.mkdir(parents=True, exist_ok=True)
+            cache_path.write_text(res.text, encoding="utf-8")
         with open("eventfeed.json", "w") as f:
             f.write(res.text)
         return [json.loads(i) for i in res.text.split('\n') if i != ""]

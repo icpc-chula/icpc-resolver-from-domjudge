@@ -1,6 +1,7 @@
 from dateutil import parser
 from functools import reduce
 import datetime
+from pathlib import Path
 import random
 import re
 import string
@@ -8,6 +9,13 @@ import string
 ISO_TIMESTAMP_FRACTION_RE = re.compile(
     r'^(\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2})\.(\d{4,})(Z|[+-]\d{2}:?\d{2})?$'
 )
+
+def api_cache_path(config, method):
+    if not config.get('cache_requests', False):
+        return None
+    endpoint = method.strip('/') or 'contest'
+    filename = re.sub(r'[^A-Za-z0-9._-]+', '_', endpoint)
+    return Path(config.get('cache_dir', 'api-cache')) / f'{filename}.json'
 
 def dtime2timestamp(dtime):
     return parser.parse(dtime).timestamp()
