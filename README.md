@@ -23,7 +23,7 @@ A tools to generate xml file of icpc-resolver via domjudge RESTful API.
 
 ## Prerequisite
 
-推荐 [icpc-resolver 2.5.940](https://github.com/icpctools/icpctools/releases/download/v2.5.940/resolver-2.5.940.zip) 或 [icpc-resolver 2.5.1160](https://github.com/icpctools/icpctools/releases/download/v2.6.1160/resolver-2.6.1160.zip)
+推荐 [icpc-resolver-2.6.1331](https://github.com/icpctools/icpctools/releases/download/v2.6.1331/resolver-2.6.1331.zip)
 
 ## Usage
 1. setup config.json
@@ -36,11 +36,11 @@ A tools to generate xml file of icpc-resolver via domjudge RESTful API.
   "skip_verify": true/false,
   "cache_requests": true/false,
   "download_logos": true/false,
-  "xml": <output xml file name>,
   "json": <output xml file name>,,
   "gold": <the number of gold medals>,
   "silver": <the number of silver medals>,
   "bronze": <the number of bronze medals>,
+  "first_place_citation": <citation of first place award>,
   "gold_show_list": true/false,
   "silver_show_list": true/false,
   "bronze_show_list": true/false,
@@ -58,6 +58,8 @@ A tools to generate xml file of icpc-resolver via domjudge RESTful API.
 
 - `download_logos`表示是否下载 affiliations/organizations 的 logo。设为`true`时会请求`/organizations/{id}/logo`，并保存到`organizations/<organization_id>/logo.png`。
 
+- `first_place_citation`表示全场第一名奖项在 event-feed 中显示的 citation，默认可设为`World Champion`。
+
 - `no_occupy_award_categories`表示给位于牌区的打星队也能够展示图片（赋予`Star Team`的奖项）。
 
 - 打星选手不参与一血奖。
@@ -70,11 +72,11 @@ A tools to generate xml file of icpc-resolver via domjudge RESTful API.
   "skip_verify": false,
   "cache_requests": false,
   "download_logos": false,
-  "xml": "events.xml"
   "json": "event-feed",
   "gold": 16,
   "silver": 32,
   "bronze": 47,
+  "first_place_citation": "World Champion",
   "gold_show_list": false,
   "silver_show_list": true,
   "bronze_show_list": true,
@@ -117,6 +119,15 @@ Resolver 2.5版的`CDP`目录格式如下：
 ``` 
 
 ## 更新log
+
+### 2026.5.18
+
+适配 `Resolver 2.6.1331`
+
+支持缓存 API 和下载 Affiliations logo
+
+顽强拼搏奖会跳过重复的 AC
+
 
 ### 2025.05.11
 

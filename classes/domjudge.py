@@ -387,7 +387,7 @@ class DOMjudge:
             buf[row['rank'] - 1].append(row['team_id'])
         winner_award = []
         for _, team_ids in enumerate(buf):
-            winner_award.append(self.award(f'winner', 'World Champion', team_ids))
+            winner_award.append(self.award(f'winner', self.config.get('first_place_citation', 'World Champion'), team_ids))
         return winner_award
 
     def resolver_award_best_girl_formatter(self):
@@ -440,8 +440,22 @@ class DOMjudge:
         return medal_team_award
 
     def resolver_award_last_AC_formatter(self):
-        submissions = list(filter(lambda submission: submission['judgement_type']['id'] == "AC" and 
-                                  self.team_award_occupy(submission['team_id']), self.submissions))
+        submissions = []
+        solved_problems = set()
+        sorted_submissions = sorted(self.submissions, key=lambda submission: (
+            ctime2timestamp(submission['contest_time']),
+            int(submission['id'])
+        ))
+        for submission in sorted_submissions:
+            if submission['judgement_type']['id'] != "AC":
+                continue
+            if not self.team_award_occupy(submission['team_id']):
+                continue
+            solved_key = (submission['team_id'], submission['problem_id'])
+            if solved_key in solved_problems:
+                continue
+            solved_problems.add(solved_key)
+            submissions.append(submission)
         if len(submissions) == 0:
             return []
         return [
