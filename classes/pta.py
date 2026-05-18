@@ -7,7 +7,7 @@ from functools import reduce
 from requests.auth import HTTPBasicAuth
 
 from utils.XML import XML_dump
-from utils.utils import dtime2timestamp, ctime2timestamp, make_ordinal_zh, randomstr
+from utils.utils import dtime2timestamp, ctime2timestamp, make_ordinal_zh, randomstr, normalize_event_feed_timestamps
 
 class PTA_school:
 
@@ -29,7 +29,11 @@ class PTA_school:
     def API(self, method):
         req_url = self.config['url'] + method
         print ("[   ] GET %s" % req_url, end='\r')
-        res = requests.get(req_url, auth=HTTPBasicAuth(self.config['username'], self.config['password']), verify=False)
+        res = requests.get(
+            req_url,
+            auth=HTTPBasicAuth(self.config['username'], self.config['password']),
+            verify=not self.config.get('skip_verify', False)
+        )
         print ("[%d] GET %s" % (res.status_code, req_url))
         with open("eventfeed.json", "w") as f:
             f.write(res.text)
@@ -209,7 +213,7 @@ class PTA_school:
         return json.dumps({
             'type': type,
             'id': id,
-            'data': data
+            'data': normalize_event_feed_timestamps(data)
         })
 
     def resolver_json_formatter(self):

@@ -33,6 +33,7 @@ A tools to generate xml file of icpc-resolver via domjudge RESTful API.
   "url": <contest api url>,
   "username": <username whose role is api_reader>,
   "password": <password of the user>,
+  "skip_verify": true/false,
   "xml": <output xml file name>,
   "json": <output xml file name>,,
   "gold": <the number of gold medals>,
@@ -49,6 +50,8 @@ A tools to generate xml file of icpc-resolver via domjudge RESTful API.
 
 - 登录的`user`需为`api_reader`角色。
 
+- `skip_verify`表示是否跳过 HTTPS 证书校验。默认建议为`false`，只有在比赛服务器证书不可用且你确认网络环境可信时才设为`true`。
+
 - `no_occupy_award_categories`表示给位于牌区的打星队也能够展示图片（赋予`Star Team`的奖项）。
 
 - 打星选手不参与一血奖。
@@ -58,6 +61,7 @@ A tools to generate xml file of icpc-resolver via domjudge RESTful API.
   "url": "https://www.example.com/api/v4/contests/{cid},
   "username": "cds",
   "password": "cds",
+  "skip_verify": false,
   "xml": "events.xml"
   "json": "event-feed",
   "gold": 16,

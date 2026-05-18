@@ -7,7 +7,7 @@ from functools import reduce
 from requests.auth import HTTPBasicAuth
 
 from utils.XML import XML_dump
-from utils.utils import dtime2timestamp, ctime2timestamp, make_ordinal
+from utils.utils import dtime2timestamp, ctime2timestamp, make_ordinal, normalize_event_feed_timestamps
 
 class DOMjudge:
 
@@ -20,7 +20,11 @@ class DOMjudge:
     def API(self, method):
         req_url = self.config['url'] + method
         print ("[   ] GET %s" % req_url, end='\r')
-        res = requests.get(req_url, auth=HTTPBasicAuth(self.config['username'], self.config['password']), verify=False)
+        res = requests.get(
+            req_url,
+            auth=HTTPBasicAuth(self.config['username'], self.config['password']),
+            verify=not self.config.get('skip_verify', False)
+        )
         print ("[%d] GET %s" % (res.status_code, req_url))
         return json.loads(res.text)
 
@@ -45,7 +49,7 @@ class DOMjudge:
         self.state_info = self.API("/state")
         for key in ['thawed', 'finalized', 'end_of_updates']:
             if self.state_info[key] == None:
-                self.state_info[key] = datetime.datetime.now().strftime("%Y-%m-%dT%H:%M:%S.%f%z")
+                self.state_info[key] = datetime.datetime.now().astimezone().isoformat(timespec='milliseconds')
 
     def load_languages(self):
         self.languages = self.API("/languages")
@@ -157,7 +161,7 @@ class DOMjudge:
         return json.dumps({
             'type': type,
             'id': id,
-            'data': data
+            'data': normalize_event_feed_timestamps(data)
         })
 
     def resolver_json_formatter(self):
