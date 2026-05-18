@@ -3,6 +3,7 @@ import requests
 import datetime
 from html import escape
 from functools import reduce
+from pathlib import Path
 
 from requests.auth import HTTPBasicAuth
 
@@ -78,6 +79,26 @@ class DOMjudge:
         self.organizations = {}
         for organization in organizations:
             self.organizations[organization['id']] = organization
+        if self.config.get('download_logos', False):
+            self.download_organization_logos()
+
+    def download_organization_logos(self):
+        for organization_id in self.organizations.keys():
+            method = f"/organizations/{organization_id}/logo"
+            req_url = self.config['url'] + method
+            print ("[   ] GET %s" % req_url, end='\r')
+            res = requests.get(
+                req_url,
+                auth=HTTPBasicAuth(self.config['username'], self.config['password']),
+                verify=not self.config.get('skip_verify', False)
+            )
+            print ("[%d] GET %s" % (res.status_code, req_url))
+            if res.status_code != 200:
+                print(f"Warning: organization {organization_id} logo download failed")
+                continue
+            logo_path = Path("organizations") / str(organization_id) / "logo.png"
+            logo_path.parent.mkdir(parents=True, exist_ok=True)
+            logo_path.write_bytes(res.content)
 
     def load_teams(self):
         teams = self.API("/teams")

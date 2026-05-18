@@ -5,6 +5,7 @@ __pycache__
 __pycache__
 logs
 api-cache/
+organizations/
 
 .DS_Store
 !config.json
