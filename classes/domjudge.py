@@ -355,8 +355,6 @@ class DOMjudge:
                 continue
             if not self.team_award_occupy(submission['team_id']): #打星队伍不评奖
                 continue
-            if ctime2timestamp(submission['contest_time']) >= ctime2timestamp(self.contest_info['duration']) - ctime2timestamp(self.contest_info['scoreboard_freeze_duration']):
-                continue
             pid = submission['problem_id']
             idx = problem_id2idx[pid]
             if first_solved[idx]:
