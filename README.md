@@ -1,5 +1,7 @@
 # icpc-resolver-from-domjudge
 
+中文 | [English](README_en.md)
+
 A tools to generate xml file of icpc-resolver via domjudge RESTful API.
 
 一键生成带有奖项信息的滚榜数据，适用于`resolver`。
