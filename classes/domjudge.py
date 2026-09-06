@@ -231,6 +231,9 @@ class DOMjudge:
         for organization in self.organizations.values():
             ret.append(self.format_json('organizations', organization['id'], organization))
         for team in self.teams:
+            # 照片来自 CDP 目录 teams/<id>/photo.png；DOMjudge 的 photo 链接指向服务器，
+            # resolver 会优先使用它并找不到文件，导致照片不显示
+            team = { key: value for key, value in team.items() if key != 'photo' }
             ret.append(self.format_json('teams', team['id'], team))
         for problem in self.problems:
             ret.append(self.format_json('problems', problem['id'], problem))
