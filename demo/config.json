@@ -1,0 +1,28 @@
+{
+    "url": "http://example.domjudge.com/api/v4/contests/3",
+    "file": "demo/event-feed.json",
+    "username": "",
+    "password": "",
+    "json": "cdp-demo/event-feed",
+    "skip_verify": false,
+    "cache_requests": false,
+    "download_logos": false,
+
+    "gold": 2,
+    "silver": 3,
+    "bronze": 4,
+    "first_place_citation": "World Champion",
+    "gold_show_list": true,
+    "silver_show_list": true,
+    "bronze_show_list": true,
+    "honors_show_list": true,
+    "no_occupy_award_categories": ["2"],
+    "award_best_girl": [],
+    "exclude_teams": [],
+    "manual_medals": { "gold": [], "silver": [], "bronze": [] },
+    "special_awards": [
+        { "id": "last-AC", "rule": "last_ac", "citation": "Tenacious Award" },
+        { "id": "most-submissions", "rule": "most_submissions", "citation": "Most Submissions" },
+        { "id": "sponsor-prize", "citation": "Sponsor Prize", "team_ids": ["42"] }
+    ]
+}
