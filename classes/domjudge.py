@@ -99,17 +99,24 @@ class DOMjudge:
         for organization_id in self.organizations.keys():
             method = f"/organizations/{organization_id}/logo"
             req_url = self.config['url'] + method
+            logo_path = Path("organizations") / str(organization_id) / "logo.png"
+            if logo_path.exists():
+                print ("[CACHE] GET %s" % req_url)
+                continue
             print ("[   ] GET %s" % req_url, end='\r')
-            res = requests.get(
-                req_url,
-                auth=HTTPBasicAuth(self.config['username'], self.config['password']),
-                verify=not self.config.get('skip_verify', False)
-            )
+            try:
+                res = requests.get(
+                    req_url,
+                    auth=HTTPBasicAuth(self.config['username'], self.config['password']),
+                    verify=not self.config.get('skip_verify', False)
+                )
+            except requests.exceptions.RequestException as error:
+                print(f"Warning: organization {organization_id} logo download failed: {error}")
+                continue
             print ("[%d] GET %s" % (res.status_code, req_url))
             if res.status_code != 200:
                 print(f"Warning: organization {organization_id} logo download failed")
                 continue
-            logo_path = Path("organizations") / str(organization_id) / "logo.png"
             logo_path.parent.mkdir(parents=True, exist_ok=True)
             logo_path.write_bytes(res.content)
 
