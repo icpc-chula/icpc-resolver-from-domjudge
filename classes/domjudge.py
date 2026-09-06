@@ -324,7 +324,7 @@ class DOMjudge:
             self.resolver_award_medal_formatter(),
             self.resolver_award_best_girl_formatter(),
             self.resolver_award_first_solved_formatter(),
-            self.resolver_award_last_AC_formatter()
+            self.resolver_award_special_formatter()
             # self.resolver_award_first_WA()
         ], [])
 
@@ -515,28 +515,68 @@ class DOMjudge:
             medal_team_award.append(self.award("Honors-metion", "Star Team", star_buf))
         return medal_team_award
 
-    def resolver_award_last_AC_formatter(self):
-        submissions = []
-        solved_problems = set()
+    def resolver_award_special_formatter(self):
+        """Special prizes configured in `special_awards`.
+
+        Each entry is either computed by a `rule` (last_ac, most_submissions)
+        or a hand-picked `team_ids` list.  Without `special_awards` the old
+        single last-AC award (`last_ac_citation`) is produced.
+        """
+        default = [{'id': 'last-AC', 'rule': 'last_ac',
+                    'citation': self.config.get('last_ac_citation', 'Tenacious Award')}]
+        rules = {
+            'last_ac': self.special_last_ac,
+            'most_submissions': self.special_most_submissions,
+        }
+        awards = []
+        for idx, spec in enumerate(self.config.get('special_awards', default)):
+            citation = spec.get('citation', spec.get('rule', 'Special Award'))
+            id = spec.get('id', f"special-{idx}")
+            if 'team_ids' in spec:
+                team_ids = [str(team_id) for team_id in spec['team_ids']]
+                missing = [team_id for team_id in team_ids if team_id not in self.team_dict]
+                for team_id in missing:
+                    print(f"Warning: {citation} team {team_id} is not in the contest, skipped")
+                team_ids = [team_id for team_id in team_ids if team_id in self.team_dict]
+            elif spec.get('rule') in rules:
+                team_ids = rules[spec['rule']]()
+            else:
+                print(f"Warning: special award {id} has no team_ids and unknown rule {spec.get('rule')!r}, skipped")
+                continue
+            if team_ids:
+                awards.append(self.award(id, citation, team_ids))
+        return awards
+
+    def sorted_official_submissions(self):
         sorted_submissions = sorted(self.submissions, key=lambda submission: (
             ctime2timestamp(submission['contest_time']),
             int(submission['id'])
         ))
-        for submission in sorted_submissions:
+        return [s for s in sorted_submissions if self.team_award_occupy(s['team_id'])]
+
+    def special_last_ac(self):
+        """Team with the last first-time AC on a problem."""
+        solved_problems = set()
+        last = None
+        for submission in self.sorted_official_submissions():
             if submission['judgement_type']['id'] != "AC":
-                continue
-            if not self.team_award_occupy(submission['team_id']):
                 continue
             solved_key = (submission['team_id'], submission['problem_id'])
             if solved_key in solved_problems:
                 continue
             solved_problems.add(solved_key)
-            submissions.append(submission)
-        if len(submissions) == 0:
+            last = submission
+        return [last['team_id']] if last else []
+
+    def special_most_submissions(self):
+        """Team(s) with the most judged submissions."""
+        counts = {}
+        for submission in self.sorted_official_submissions():
+            counts[submission['team_id']] = counts.get(submission['team_id'], 0) + 1
+        if not counts:
             return []
-        return [
-            self.award("last-AC", "Tenacious Award", submissions[-1]['team_id'])
-        ]
+        best = max(counts.values())
+        return [team_id for team_id, count in counts.items() if count == best]
 
     def resolver_award_first_WA(self):
         submissions = list(filter(lambda submission: submission['judgement_type']['id'] == "WA" and

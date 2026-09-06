@@ -1,24 +1,31 @@
 {
-    "url": "http://example.domjudge.com/api/v4/contests/1",
-    "username": "username",
-    "password": "password",
-    "json": "event-feed",
-    "skip_verify": false,
-    "cache_requests": true,
-    "download_logos": true,
+  "url": "http://example.domjudge.com/api/v4/contests/1",
+  "file": "",
+  "username": "username",
+  "password": "password",
+  "json": "event-feed",
+  "skip_verify": false,
+  "cache_requests": true,
+  "download_logos": true,
 
-    "gold": 16,
-    "silver": 32,
-    "bronze": 47,
-    "first_place_citation": "World Champion",
-    "gold_show_list": true,
-    "silver_show_list": true,
-    "bronze_show_list": true,
-    "honors_show_list": true,
-    "no_occupy_award_categories": [
-        "2"
-    ],
-    "award_best_girl": [
-        "11"
-    ]
+  "gold": 16,
+  "silver": 32,
+  "bronze": 47,
+  "first_place_citation": "World Champion",
+  "gold_show_list": true,
+  "silver_show_list": true,
+  "bronze_show_list": true,
+  "honors_show_list": true,
+  "no_occupy_award_categories": ["2"],
+  "award_best_girl": ["11"],
+  "exclude_teams": [],
+  "manual_medals": {
+    "gold": [],
+    "silver": [],
+    "bronze": []
+  },
+  "special_awards": [
+    { "id": "last-AC", "rule": "last_ac", "citation": "Tenacious Award" },
+    { "id": "most-submissions", "rule": "most_submissions", "citation": "Most Submissions" }
+  ]
 }
