@@ -1,12 +1,23 @@
+# generated / runtime
 *.json
 *.xml
 *.csv
 __pycache__
-__pycache__
-logs
+logs/
 api-cache/
 organizations/
-
+.venv/
 .DS_Store
+
+# contest-specific data (local only)
+contest/
+cdp/
+cdp-demo/
+real/
+real-config.json
+run.sh
+
+# keep templates and the demo
 !config.json
+!pta.json
 !demo/*.json
