@@ -393,6 +393,9 @@ class DOMjudge:
         return first_solved_award
 
     def resolver_award_top_team_formatter(self, rank):
+        manual_medals = self.config.get('manual_medals', {})
+        if any(manual_medals.get(medal) for medal in ['gold', 'silver', 'bronze']):
+            return self.resolver_award_manual_top_team_formatter(manual_medals)
         buf = [[] for _ in range(rank)]
         for row in self.scoreboard['rows']:
             if not self.team_award_occupy(row['team_id']): #打星队伍不评奖
@@ -403,6 +406,16 @@ class DOMjudge:
         top_team_award = []
         for idx, team_ids in enumerate(buf, start=1):
             top_team_award.append(self.award(f'rank-{idx}', '%s Place' % make_ordinal(idx), team_ids))
+        return top_team_award
+
+    def resolver_award_manual_top_team_formatter(self, manual_medals):
+        """名次奖跟随配置指定的金银铜队伍"""
+        top_team_award = []
+        for idx, key in enumerate(['gold', 'silver', 'bronze'], start=1):
+            team_ids = [str(team_id) for team_id in manual_medals.get(key, [])]
+            team_ids = [team_id for team_id in team_ids if team_id in self.team_dict]
+            if team_ids:
+                top_team_award.append(self.award(f'rank-{idx}', '%s Place' % make_ordinal(idx), team_ids))
         return top_team_award
 
     def resolver_award_winner_formatter(self): 
@@ -429,6 +442,9 @@ class DOMjudge:
         return best_girls_award
 
     def resolver_award_medal_formatter(self):
+        manual_medals = self.config.get('manual_medals', {})
+        if any(manual_medals.get(medal) for medal in ['gold', 'silver', 'bronze']):
+            return self.resolver_award_manual_medal_formatter(manual_medals)
         medal_team_award = []
         button_rank = 0
         medals = [
@@ -462,6 +478,39 @@ class DOMjudge:
             if len(buf) != total:
                 print(f"Warning: {citation} expected {total} teams, but got {len(buf)}")
 
+        if star_buf:
+            medal_team_award.append(self.award("Honors-metion", "Star Team", star_buf))
+        return medal_team_award
+
+    def resolver_award_manual_medal_formatter(self, manual_medals):
+        """奖牌直接由配置指定队伍，不按排名产生"""
+        medal_team_award, medalists = [], set()
+        medals = [
+            ('gold', "gold-medal", "Gold medal winner", "Gold Winner", self.config['gold_show_list']),
+            ('silver', "silver-medal", "Silver medal winner", "Silver Winner", self.config['silver_show_list']),
+            ('bronze', "bronze-medal", "Bronze medal winner", "Bronze Winner", self.config['bronze_show_list']),
+        ]
+        for key, id, citation, list_citation, show_as_list in medals:
+            buf = []
+            for team_id in manual_medals.get(key, []):
+                team_id = str(team_id)
+                if team_id not in self.team_dict:
+                    print(f"Warning: {citation} team {team_id} is not in the contest, skipped")
+                    continue
+                buf.append(team_id)
+            medalists.update(buf)
+            if buf:
+                medal_team_award.append(self.award(id, citation, buf))
+            if show_as_list and buf:
+                medal_team_award.append(self.award_as_list(id + "_list", list_citation, buf))
+
+        honors_func = lambda row: row['team_id'] not in medalists and self.team_award_occupy(row['team_id'])
+        honors_buf = [row['team_id'] for row in filter(honors_func, self.scoreboard['rows'])]
+        if self.config['honors_show_list'] and honors_buf:
+            medal_team_award.append(self.award_as_list("honors-metion_list", "Honorable Mention", honors_buf))
+
+        star_func = lambda row: not self.team_award_occupy(row['team_id'])
+        star_buf = [row['team_id'] for row in filter(star_func, self.scoreboard['rows'])]
         if star_buf:
             medal_team_award.append(self.award("Honors-metion", "Star Team", star_buf))
         return medal_team_award
