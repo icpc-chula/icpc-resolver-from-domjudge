@@ -33,6 +33,7 @@ A tools to generate xml file of icpc-resolver via domjudge RESTful API.
 ```jsonld
 {
   "url": <contest api url>,
+  "file": <local event feed, optional>,
   "username": <username whose role is api_reader>,
   "password": <password of the user>,
   "skip_verify": true/false,
@@ -48,11 +49,19 @@ A tools to generate xml file of icpc-resolver via domjudge RESTful API.
   "bronze_show_list": true/false,
   "honors_show_list": true/false,
   "no_occupy_award_categories": [<group_id1>, <group_id2>, ...],
-  "award_best_girl": [<group_id1>]
+  "award_best_girl": [<group_id1>],
+  "exclude_teams": [<team_id1>, <team_id2>, ...],
+  "manual_medals": {"gold": [<team_id>], "silver": [<team_id>], "bronze": [<team_id>]},
+  "special_awards": [
+    {"id": <award id>, "rule": "last_ac" | "most_submissions", "citation": <citation>},
+    {"id": <award id>, "citation": <citation>, "team_ids": [<team_id1>, ...]}
+  ]
 }
 ```
 
 - 登录的`user`需为`api_reader`角色。
+
+- `file`指本地的`event feed`（`NDJSON`），不为空时直接从该文件还原数据，不再请求`API`，也不会下载 logo。`/scoreboard`不在`event feed`里，会按罚时规则自行计算。
 
 - `skip_verify`表示是否跳过 HTTPS 证书校验。默认建议为`false`，只有在比赛服务器证书不可用且你确认网络环境可信时才设为`true`。
 
@@ -63,6 +72,17 @@ A tools to generate xml file of icpc-resolver via domjudge RESTful API.
 - `first_place_citation`表示全场第一名奖项在 event-feed 中显示的 citation，默认可设为`World Champion`。
 
 - `no_occupy_award_categories`表示给位于牌区的打星队也能够展示图片（赋予`Star Team`的奖项）。
+
+- `exclude_teams`表示不参与滚榜的队伍`id`列表，这些队伍及其提交、评测记录都不会写入`event-feed`。
+
+- `manual_medals`表示直接指定金银铜牌队伍。任一项非空时，奖牌不再按排名产生，冠亚季军也跟随该名单，其余队伍归入`Honorable Mention`。
+
+- `special_awards`表示额外的特别奖列表。每项包含`id`和`citation`，并通过`rule`自动计算或用`team_ids`手动指定：
+  - `"rule": "last_ac"`：最后一个首次通过某题的队伍（顽强拼搏奖）。
+  - `"rule": "most_submissions"`：提交次数最多的队伍。
+  - `"team_ids": [...]`：直接把奖项颁给列出的队伍（例如赞助商奖）。
+
+  打星队伍不参与按规则计算的特别奖。若不设置`special_awards`，则只生成一个顽强拼搏奖，名称取自`last_ac_citation`（默认`Tenacious Award`）。
 
 - 打星选手不参与一血奖。
 

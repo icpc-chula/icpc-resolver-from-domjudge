@@ -39,6 +39,7 @@ pip install -r requirements.txt
 ```jsonld
 {
   "url": <contest api url>,
+  "file": <local event feed, optional>,
   "username": <username whose role is api_reader>,
   "password": <password of the user>,
   "skip_verify": true/false,
@@ -54,11 +55,19 @@ pip install -r requirements.txt
   "bronze_show_list": true/false,
   "honors_show_list": true/false,
   "no_occupy_award_categories": [<group_id1>, <group_id2>, ...],
-  "award_best_girl": [<group_id1>]
+  "award_best_girl": [<group_id1>],
+  "exclude_teams": [<team_id1>, <team_id2>, ...],
+  "manual_medals": {"gold": [<team_id>], "silver": [<team_id>], "bronze": [<team_id>]},
+  "special_awards": [
+    {"id": <award id>, "rule": "last_ac" | "most_submissions", "citation": <citation>},
+    {"id": <award id>, "citation": <citation>, "team_ids": [<team_id1>, ...]}
+  ]
 }
 ```
 
 - The `user` used to log in must have the `api_reader` role.
+
+- `file` is a local event feed (NDJSON). When it is not empty the data is rebuilt from that file instead of the API, and no logos are downloaded. `/scoreboard` is not part of an event feed, so it is recomputed from the submissions using the contest penalty rules.
 
 - `skip_verify` controls whether HTTPS certificate verification is skipped. The recommended default is `false`. Only set it to `true` when the contest server's certificate is unusable and you trust the network you are on.
 
@@ -73,6 +82,17 @@ pip install -r requirements.txt
 - `no_occupy_award_categories` lists the group IDs of star teams. Star teams that land in the medal zone still get their photo shown (they are given the `Star Team` award), but they do not take up any official medal slot.
 
 - `award_best_girl` lists the group ID used for the best women's team award. The highest-ranked team in that group receives the award.
+
+- `manual_medals` names the medal winners directly. When any of its lists is non-empty the medals are no longer derived from the ranking, the 1st/2nd/3rd Place awards follow the same teams, and everyone else falls into `Honorable Mention`.
+
+- `special_awards` is a list of extra prizes. Each entry has an `id` and a `citation`, and is either computed by a `rule` or hand-picked with `team_ids`:
+  - `"rule": "last_ac"`: the last team to make a first accepted submission on a problem.
+  - `"rule": "most_submissions"`: the team(s) with the most judged submissions.
+  - `"team_ids": [...]`: the listed teams receive the award as-is (e.g. a sponsor prize).
+
+  Star teams never receive rule-based special awards. If `special_awards` is omitted, a single last-AC award is produced with the citation from `last_ac_citation` (default `Tenacious Award`).
+
+- `exclude_teams` lists the team IDs to drop from the resolution. Those teams, their submissions and their judgements are left out of the generated `event-feed` entirely.
 
 - Star teams are not eligible for the first-to-solve award.
 
