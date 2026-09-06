@@ -8,6 +8,7 @@ from pathlib import Path
 from requests.auth import HTTPBasicAuth
 
 from utils.XML import XML_dump
+from utils.event_feed import event_feed_to_api
 from utils.utils import dtime2timestamp, ctime2timestamp, make_ordinal, normalize_event_feed_timestamps, api_cache_path
 
 class DOMjudge:
@@ -15,10 +16,22 @@ class DOMjudge:
     def __init__(self, config):
         self.config = config
         self.award_list = ['"team id","tean name","team group","team affiliation","award","team members"']
+        self.load_event_feed()
         self.load_data()
         self.prep_data()
 
+    def load_event_feed(self):
+        """配置了 file 时直接读本地 event feed，不再请求 API"""
+        self.event_feed = None
+        if self.config.get('file', ''):
+            print("[FILE] %s" % self.config['file'])
+            self.event_feed = event_feed_to_api(self.config['file'])
+
     def API(self, method):
+        if self.event_feed != None:
+            print ("[FEED] GET %s" % method)
+            return self.event_feed[method]
+
         req_url = self.config['url'] + method
         cache_path = api_cache_path(self.config, method)
         if cache_path != None and cache_path.exists():
@@ -79,7 +92,7 @@ class DOMjudge:
         self.organizations = {}
         for organization in organizations:
             self.organizations[organization['id']] = organization
-        if self.config.get('download_logos', False):
+        if self.config.get('download_logos', False) and self.event_feed == None:
             self.download_organization_logos()
 
     def download_organization_logos(self):
