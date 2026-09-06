@@ -77,7 +77,10 @@ class DOMjudge:
         self.languages = self.API("/languages")
 
     def load_runs(self):
-        self.runs = self.API("/runs")
+        runs = self.API("/runs")
+        judgement_ids = set(judgement['id'] for judgement in self.judgements)
+        func = lambda run: run['judgement_id'] in judgement_ids
+        self.runs = list(filter(func, runs))
 
     def load_groups(self):
         groups = self.API("/groups")
@@ -124,7 +127,8 @@ class DOMjudge:
         teams = self.API("/teams")
         group_ids = [group['id'] for group in self.groups.values()]
         same = lambda x, y: list(set(x) & set(y))
-        func = lambda team: len(same(team['group_ids'], group_ids))
+        exclude_teams = [str(team_id) for team_id in self.config.get('exclude_teams', [])]
+        func = lambda team: len(same(team['group_ids'], group_ids)) and str(team['id']) not in exclude_teams
         self.teams = list(filter(func, teams))
         self.team_dict = {}
         for team in self.teams:
@@ -150,6 +154,8 @@ class DOMjudge:
 
     def load_scoreboard(self):
         self.scoreboard = self.API('/scoreboard')
+        func = lambda row: row['team_id'] in self.team_dict
+        self.scoreboard['rows'] = list(filter(func, self.scoreboard['rows']))
 
     def prep_data(self):
         self.submission_judgement_type()
