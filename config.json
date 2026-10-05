@@ -11,7 +11,7 @@
   "gold": 16,
   "silver": 32,
   "bronze": 47,
-  "first_place_citation": "World Champion",
+  "first_place_citation": "Champion",
   "gold_show_list": true,
   "silver_show_list": true,
   "bronze_show_list": true,
@@ -26,6 +26,10 @@
   },
   "special_awards": [
     { "id": "last-AC", "rule": "last_ac", "citation": "Tenacious Award" },
-    { "id": "most-submissions", "rule": "most_submissions", "citation": "Most Submissions" }
+    {
+      "id": "most-submissions",
+      "rule": "most_submissions",
+      "citation": "Most Submissions"
+    }
   ]
 }
